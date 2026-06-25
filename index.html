@@ -2798,8 +2798,14 @@ async function loadMarcacionesHoy() {
 }
   // ── Cambio de turno ────────────────────────────────────────
 function showCambioTurno() {
-  var detWrap = document.getElementById('adh-detalle-agente');
-  if (!detWrap) return;
+  var detWrap = document.getElementById('agente-cambio-modal');
+  if (!detWrap) {
+    detWrap = document.createElement('div');
+    detWrap.id = 'agente-cambio-modal';
+    detWrap.style.cssText = 'position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;padding:20px';
+    document.body.appendChild(detWrap);
+  }
+  detWrap.style.display = 'flex';
   var nombre = currentUser.nombre + ' ' + currentUser.apellido;
   var email  = currentUser.email;
 
@@ -2820,7 +2826,7 @@ function showCambioTurno() {
       '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)">' +
         '<span style="font-size:18px">🔄</span>' +
         '<div style="font-size:14px;font-weight:700">Solicitar cambio de turno</div>' +
-        '<button onclick="document.getElementById(\'adh-detalle-agente\').style.display=\'none\'" ' +
+        '<button onclick="document.getElementById(\'agente-cambio-modal\').style.display=\'none\'" ' +
           'style="margin-left:auto;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rs);padding:4px 10px;color:var(--text2);cursor:pointer;font-family:inherit;font-size:11px">✕ Cerrar</button>' +
       '</div>' +
 
