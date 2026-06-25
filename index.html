@@ -2788,6 +2788,7 @@ async function loadMarcacionesHoy() {
     if (data.ok) {
       showToast(accion === 'aprobado' ? '✅ Cambio aceptado — turnos intercambiados' : '❌ Solicitud rechazada');
       await loadSolicitudesCambio();
+      await loadMallaFromCloud();
       renderVistaAgente();
     } else {
       showToast('❌ Error: ' + (data.error || 'Error desconocido'));
