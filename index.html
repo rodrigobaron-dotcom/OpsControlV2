@@ -1182,7 +1182,7 @@ function startApp() {
     // Agente: ocultar sidebar, mostrar solo vista personal
     document.querySelector('.sidebar').style.display = 'none';
     document.querySelector('.main').style.flex = '1';
-    Promise.all([loadMallaFromCloud(), loadMarcacionesHoy(), loadSolicitudesCambio()]).then(function() {
+    Promise.all([loadMallaFromCloud(), loadMarcacionesHoy(), loadSolicitudesCambio(), loadAgentes()]).then(function() {
       // Verificar break pendiente INMEDIATAMENTE al cargar
       checkAutoBreakEnd().then(function() {
         renderVistaAgente();
