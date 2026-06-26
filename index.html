@@ -1188,7 +1188,7 @@ function startApp() {
         renderVistaAgente();
         initAgenteListeners();
       });
-      setInterval(function() { renderVistaAgente(); }, 30000);
+      setInterval(function() { loadMallaFromCloud().then(function() { renderVistaAgente(); }); }, 30000);
       setInterval(function() { checkAlerts(); }, 10000);
       // Auto-detectar fin de break cada 60 segundos
       setInterval(function() { checkAutoBreakEnd(); }, 60000);
