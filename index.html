@@ -1280,7 +1280,7 @@ function initials(n, a) {
 // ── Sincronización con GitHub (malla en la nube) ──────────
 async function loadMallaFromCloud() {
   try {
-    var res  = await fetch('/api/malla');
+    var res = await fetch('/api/malla?t=' + Date.now());
     var data = await res.json();
     if (data.ok && Array.isArray(data.malla) && data.malla.length > 0) {
   malla = data.malla;
@@ -2413,8 +2413,7 @@ function renderVistaAgente() {
   // Turno de hoy
   var turno = malla.find(function(r) {
     if (r.fecha !== today) return false;
-    return (r.email && r.email.toLowerCase() === email.toLowerCase()) ||
-           (r.nombre && r.nombre.toLowerCase() === nombre.toLowerCase());
+    return r.agente_id === currentUser.id;
   });
 
   // Estado actual
