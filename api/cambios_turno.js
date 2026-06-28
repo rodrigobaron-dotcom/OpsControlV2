@@ -4,18 +4,22 @@ import { SUPA_URL, SUPA_KEY, cors } from './_supabase.js';
 const H = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json' };
 
 async function intercambiarTurnos(turnoSolId, turnoRecId) {
-  // Leer ambos turnos
-  const r1 = await fetch(`${SUPA_URL}/rest/v1/turnos?id=eq.${turnoSolId}&select=*`, { headers: H });
-  const r2 = await fetch(`${SUPA_URL}/rest/v1/turnos?id=eq.${turnoRecId}&select=*`, { headers: H });
+  // Leer ambos turnos en paralelo correctamente
+  const [r1, r2] = await Promise.all([
+    fetch(`${SUPA_URL}/rest/v1/turnos?id=eq.${turnoSolId}&select=*`, { headers: H }),
+    fetch(`${SUPA_URL}/rest/v1/turnos?id=eq.${turnoRecId}&select=*`, { headers: H })
+  ]);
   const [t1arr, t2arr] = await Promise.all([r1.json(), r2.json()]);
   const t1 = t1arr[0], t2 = t2arr[0];
   if (!t1 || !t2) throw new Error('No se encontraron los turnos');
 
   // Intercambiar agente_id entre los dos turnos
-  await fetch(`${SUPA_URL}/rest/v1/turnos?id=eq.${t1.id}`,
-    { method: 'PATCH', headers: { ...H, 'Prefer': 'return=minimal' }, body: JSON.stringify({ agente_id: t2.agente_id }) });
-  await fetch(`${SUPA_URL}/rest/v1/turnos?id=eq.${t2.id}`,
-    { method: 'PATCH', headers: { ...H, 'Prefer': 'return=minimal' }, body: JSON.stringify({ agente_id: t1.agente_id }) });
+  await Promise.all([
+    fetch(`${SUPA_URL}/rest/v1/turnos?id=eq.${t1.id}`,
+      { method: 'PATCH', headers: { ...H, 'Prefer': 'return=minimal' }, body: JSON.stringify({ agente_id: t2.agente_id }) }),
+    fetch(`${SUPA_URL}/rest/v1/turnos?id=eq.${t2.id}`,
+      { method: 'PATCH', headers: { ...H, 'Prefer': 'return=minimal' }, body: JSON.stringify({ agente_id: t1.agente_id }) })
+  ]);
 }
 
 export default async function handler(req, res) {
