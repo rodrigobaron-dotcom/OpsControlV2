@@ -12,11 +12,32 @@ async function intercambiarTurnos(turnoSolId, turnoRecId) {
   const t1 = t1arr[0], t2 = t2arr[0];
   if (!t1 || !t2) throw new Error('No se encontraron los turnos');
 
+  // Intercambiar fecha y horarios, manteniendo agente_id intacto
   await Promise.all([
     fetch(`${SUPA_URL}/rest/v1/turnos?id=eq.${t1.id}`,
-      { method: 'PATCH', headers: { ...getH(), 'Prefer': 'return=minimal' }, body: JSON.stringify({ agente_id: t2.agente_id }) }),
+      { method: 'PATCH', headers: { ...getH(), 'Prefer': 'return=minimal' }, body: JSON.stringify({
+        fecha:        t2.fecha,
+        dia_semana:   t2.dia_semana,
+        turno:        t2.turno,
+        turno_inicio: t2.turno_inicio,
+        turno_fin:    t2.turno_fin,
+        break_inicio: t2.break_inicio,
+        break_fin:    t2.break_fin,
+        lunch_inicio: t2.lunch_inicio,
+        lunch_fin:    t2.lunch_fin
+      })}),
     fetch(`${SUPA_URL}/rest/v1/turnos?id=eq.${t2.id}`,
-      { method: 'PATCH', headers: { ...getH(), 'Prefer': 'return=minimal' }, body: JSON.stringify({ agente_id: t1.agente_id }) })
+      { method: 'PATCH', headers: { ...getH(), 'Prefer': 'return=minimal' }, body: JSON.stringify({
+        fecha:        t1.fecha,
+        dia_semana:   t1.dia_semana,
+        turno:        t1.turno,
+        turno_inicio: t1.turno_inicio,
+        turno_fin:    t1.turno_fin,
+        break_inicio: t1.break_inicio,
+        break_fin:    t1.break_fin,
+        lunch_inicio: t1.lunch_inicio,
+        lunch_fin:    t1.lunch_fin
+      })})
   ]);
 }
 
