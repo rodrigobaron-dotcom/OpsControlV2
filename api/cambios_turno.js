@@ -1,24 +1,22 @@
 // api/cambios_turno.js — Cambios de turno entre agentes
 import { SUPA_URL, SUPA_KEY, cors } from './_supabase.js';
 
-const H = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json' };
+function getH() { return { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json' }; }
 
 async function intercambiarTurnos(turnoSolId, turnoRecId) {
-  // Leer ambos turnos en paralelo correctamente
   const [r1, r2] = await Promise.all([
-    fetch(`${SUPA_URL}/rest/v1/turnos?id=eq.${turnoSolId}&select=*`, { headers: H }),
-    fetch(`${SUPA_URL}/rest/v1/turnos?id=eq.${turnoRecId}&select=*`, { headers: H })
+    fetch(`${SUPA_URL}/rest/v1/turnos?id=eq.${turnoSolId}&select=*`, { headers: getH() }),
+    fetch(`${SUPA_URL}/rest/v1/turnos?id=eq.${turnoRecId}&select=*`, { headers: getH() })
   ]);
   const [t1arr, t2arr] = await Promise.all([r1.json(), r2.json()]);
   const t1 = t1arr[0], t2 = t2arr[0];
   if (!t1 || !t2) throw new Error('No se encontraron los turnos');
 
-  // Intercambiar agente_id entre los dos turnos
   await Promise.all([
     fetch(`${SUPA_URL}/rest/v1/turnos?id=eq.${t1.id}`,
-      { method: 'PATCH', headers: { ...H, 'Prefer': 'return=minimal' }, body: JSON.stringify({ agente_id: t2.agente_id }) }),
+      { method: 'PATCH', headers: { ...getH(), 'Prefer': 'return=minimal' }, body: JSON.stringify({ agente_id: t2.agente_id }) }),
     fetch(`${SUPA_URL}/rest/v1/turnos?id=eq.${t2.id}`,
-      { method: 'PATCH', headers: { ...H, 'Prefer': 'return=minimal' }, body: JSON.stringify({ agente_id: t1.agente_id }) })
+      { method: 'PATCH', headers: { ...getH(), 'Prefer': 'return=minimal' }, body: JSON.stringify({ agente_id: t1.agente_id }) })
   ]);
 }
 
@@ -33,7 +31,7 @@ export default async function handler(req, res) {
       let url = `${SUPA_URL}/rest/v1/cambios_turno?select=*,solicitante:agentes!cambios_turno_solicitante_id_fkey(nombre,apellido,email),receptor:agentes!cambios_turno_receptor_id_fkey(nombre,apellido,email)&order=created_at.desc`;
       if (agente_id) url += `&or=(solicitante_id.eq.${agente_id},receptor_id.eq.${agente_id})`;
       if (estado) url += `&estado=eq.${estado}`;
-      const r = await fetch(url, { headers: H });
+      const r = await fetch(url, { headers: getH() });
       const data = await r.json();
       return res.json({ ok: true, cambios: Array.isArray(data) ? data : [] });
     }
@@ -46,7 +44,7 @@ export default async function handler(req, res) {
       }
       const r = await fetch(`${SUPA_URL}/rest/v1/cambios_turno`, {
         method: 'POST',
-        headers: { ...H, 'Prefer': 'return=representation' },
+        headers: { ...getH(), 'Prefer': 'return=representation' },
         body: JSON.stringify({ solicitante_id, receptor_id, turno_solicitante, turno_receptor, motivo: motivo || null, estado: 'pendiente' })
       });
       const data = await r.json();
@@ -61,8 +59,7 @@ export default async function handler(req, res) {
 
       // Si se aprueba, intercambiar turnos en Supabase
       if (estado === 'aprobado') {
-        // Leer el cambio para obtener los IDs de turnos
-        const rc = await fetch(`${SUPA_URL}/rest/v1/cambios_turno?id=eq.${id}&select=turno_solicitante,turno_receptor`, { headers: H });
+        const rc = await fetch(`${SUPA_URL}/rest/v1/cambios_turno?id=eq.${id}&select=turno_solicitante,turno_receptor`, { headers: getH() });
         const cambios = await rc.json();
         if (Array.isArray(cambios) && cambios.length) {
           try {
@@ -72,11 +69,12 @@ export default async function handler(req, res) {
             return res.status(500).json({ ok: false, error: 'intercambiarTurnos: ' + eSwap.message });
           }
         }
+      }
 
       // Actualizar estado
       const r = await fetch(`${SUPA_URL}/rest/v1/cambios_turno?id=eq.${id}`, {
         method: 'PATCH',
-        headers: { ...H, 'Prefer': 'return=minimal' },
+        headers: { ...getH(), 'Prefer': 'return=minimal' },
         body: JSON.stringify({ estado, aprobado_por: aprobado_por || null })
       });
       if (!r.ok) return res.json({ ok: false, error: r.statusText });
