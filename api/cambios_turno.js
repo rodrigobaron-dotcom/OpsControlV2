@@ -65,9 +65,13 @@ export default async function handler(req, res) {
         const rc = await fetch(`${SUPA_URL}/rest/v1/cambios_turno?id=eq.${id}&select=turno_solicitante,turno_receptor`, { headers: H });
         const cambios = await rc.json();
         if (Array.isArray(cambios) && cambios.length) {
-          await intercambiarTurnos(cambios[0].turno_solicitante, cambios[0].turno_receptor);
+          try {
+            await intercambiarTurnos(cambios[0].turno_solicitante, cambios[0].turno_receptor);
+          } catch(eSwap) {
+            console.error('intercambiarTurnos falló:', eSwap.message);
+            return res.status(500).json({ ok: false, error: 'intercambiarTurnos: ' + eSwap.message });
+          }
         }
-      }
 
       // Actualizar estado
       const r = await fetch(`${SUPA_URL}/rest/v1/cambios_turno?id=eq.${id}`, {
