@@ -2613,6 +2613,9 @@ function renderVistaAgente() {
             '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">' +
               '<span style="font-size:11px;color:var(--text2)">' + (esSolicitante?'📤 Enviada a':'📥 De') + ' <strong>' + otroNombre + '</strong></span>' +
               '<span style="margin-left:auto;font-size:10px;font-weight:700;color:' + colorEstado + '">' + c.estado.toUpperCase() + '</span>' +
+            '</div>' +
+            '<div style="font-size:10px;color:var(--text2);margin-bottom:4px">🕐 <strong>' + (esSolicitante ? 'Tu turno' : 'Turno solicitante') + ':</strong> ' + ((window._solicitudesCambioTurnos && window._solicitudesCambioTurnos[c.turno_solicitante]) || '—') + '</div>' +
+            '<div style="font-size:10px;color:var(--text2);margin-bottom:6px">🔄 <strong>' + (esSolicitante ? 'Turno a recibir' : 'Tu turno actual') + ':</strong> ' + ((window._solicitudesCambioTurnos && window._solicitudesCambioTurnos[c.turno_receptor]) || '—') + '</div>';
             '</div>';
           if (!esSolicitante && c.estado === 'pendiente') {
             html += '<div style="display:flex;gap:6px">' +
@@ -2773,6 +2776,21 @@ async function loadMarcacionesHoy() {
     var res  = await fetch('/api/cambios_turno?agente_id=' + currentUser.id);
     var data = await res.json();
     window._solicitudesCambio = data.ok ? data.cambios : [];
+
+    // Traer horarios de los turnos involucrados
+    var ids = [];
+    (window._solicitudesCambio || []).forEach(function(c) {
+      if (c.turno_solicitante) ids.push(c.turno_solicitante);
+      if (c.turno_receptor)    ids.push(c.turno_receptor);
+    });
+    if (ids.length) {
+      var mallaHorariosMap = {};
+      ids.forEach(function(id) {
+        var t = malla.find(function(r) { return r.id === id; });
+        if (t) mallaHorariosMap[id] = t.fecha + ' — ' + t.turno_inicio + ' a ' + t.turno_fin;
+      });
+      window._solicitudesCambioTurnos = mallaHorariosMap;
+    }
   } catch(e) { window._solicitudesCambio = []; }
 }
   async function responderCambioTurno(cambioId, accion) {
