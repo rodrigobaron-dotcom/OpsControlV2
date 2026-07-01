@@ -21,7 +21,7 @@ export default async function handler(req, res) {
   try {
     // GET — leer malla completa
     if (req.method === 'GET') {
-      const url = `${SUPA_URL}/rest/v1/turnos?select=id,fecha,dia_semana,turno,turno_inicio,turno_fin,break_inicio,break_fin,lunch_inicio,lunch_fin,linea_atencion,agente_id,agentes(nombre,apellido,email,linea_atencion,nivel)&order=fecha.asc,turno_inicio.asc`;
+      const url = `${SUPA_URL}/rest/v1/turnos?select=id,fecha,dia_semana,turno,turno_inicio,turno_fin,break_inicio,break_fin,lunch_inicio,lunch_fin,linea_atencion,conexion,agente_id,agentes(nombre,apellido,email,linea_atencion,nivel)&order=fecha.asc,turno_inicio.asc`;
       const r = await fetch(url, { headers: H() });
       const data = await r.json();
       if (!Array.isArray(data)) return res.json({ ok: false, error: data?.message || 'Error leyendo turnos' });
